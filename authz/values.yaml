@@ -1,0 +1,19 @@
+groups:
+- name: admin
+  namespaces:
+  - '*'
+  permission: admin
+- name: devops-admin
+  namespaces:
+  - default
+  - shared
+  - admission-control
+  - monitoring
+  permission: admin
+- name: devops-readonly
+  namespaces:
+  - default
+  - shared
+  - admission-control
+  - monitoring
+  permission: readonly

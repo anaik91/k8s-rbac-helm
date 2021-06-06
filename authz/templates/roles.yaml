@@ -1,0 +1,41 @@
+{{ range $eachgroup := .Values.groups }}
+{{ if not (has "*" $eachgroup.namespaces)  }}
+{{ range $ns := $eachgroup.namespaces }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $eachgroup.name }}
+  namespace: {{ $ns }}
+rules:
+{{ if eq $eachgroup.permission "admin" }}
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["create", "get", "list", "watch", "delete", "update", "patch" ]
+{{ else }}
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["*"]
+  resources: ["pods/portforward", "pods/exec"]
+  verbs: ["create"]
+{{ end }}
+{{ end }}
+{{ range $ns := .namespaces }}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{$eachgroup.name}}-role-binding-{{ $eachgroup.permission}}
+  namespace: {{ $ns }}
+subjects:
+- kind: Group
+  name: "gid:{{ $eachgroup.name }}"
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: {{ $eachgroup.name }}
+  apiGroup: rbac.authorization.k8s.io
+{{ end }}
+{{- end }}
+{{- end }}

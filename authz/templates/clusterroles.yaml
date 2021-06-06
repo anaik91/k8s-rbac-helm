@@ -1,0 +1,35 @@
+{{ range .Values.groups }}
+{{ if has "*" .namespaces  }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eks-{{ .name }}
+rules:
+{{ if eq .permission "admin" }}
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["create", "get", "list", "watch", "delete", "update", "patch" ]
+{{ else }}
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["*"]
+  resources: ["pods/portforward", "pods/exec"]
+  verbs: ["create"]
+{{ end }}
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{.name}}-group-{{.permission}}-role-binding
+subjects:
+- kind: Group
+  name: "gid:{{ .name }}"
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: eks-{{ .name }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}  
+{{- end }}
